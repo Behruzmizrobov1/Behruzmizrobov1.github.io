@@ -131,8 +131,7 @@ function animateHero() {
   }, '-=0.4')
 
   // Description
-  .to('#heroDesc', { opacity: 1, y: 0, duration: 0.7 }, '-=0.4')
-  .from('#heroDesc', { y: 24 }, '<')
+  .fromTo('#heroDesc', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.4')
 
   // Typed
   .to('#heroTyped', { opacity: 1, duration: 0.3 }, '-=0.2')
@@ -195,6 +194,7 @@ function animateCounters() {
 function initScrollAnimations() {
   // Reveal up elements
   gsap.utils.toArray('.reveal-up').forEach((el, i) => {
+    gsap.set(el, { y: 40, opacity: 0 }); // ← initial state FIRST
     gsap.to(el, {
       opacity: 1,
       y: 0,
@@ -207,7 +207,6 @@ function initScrollAnimations() {
       },
       delay: (i % 3) * 0.1
     });
-    gsap.set(el, { y: 40 });
   });
 
   // Reveal right elements
@@ -244,11 +243,14 @@ function initScrollAnimations() {
     });
   });
 
-  // Services cards stagger
-  gsap.from('.svc-card', {
-    opacity: 0, y: 50, stagger: 0.1, duration: 0.7, ease: 'power3.out',
-    scrollTrigger: { trigger: '.services-grid', start: 'top 80%' }
-  });
+  // Services cards stagger — use fromTo to avoid double opacity conflict
+  gsap.fromTo('.svc-card',
+    { opacity: 0, y: 50 },
+    {
+      opacity: 1, y: 0, stagger: 0.1, duration: 0.7, ease: 'power3.out',
+      scrollTrigger: { trigger: '.services-grid', start: 'top 80%' }
+    }
+  );
 
   // Stack cards stagger
   gsap.from('.stack-card', {
