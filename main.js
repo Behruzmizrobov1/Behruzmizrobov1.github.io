@@ -334,12 +334,22 @@ function initHamburger() {
 }
 
 // ──────────────────────────────────────────
-// 12. CONTACT FORM — Gmail direct (100% works)
+// 12. CONTACT FORM — EmailJS (visitor sends → arrives in Gmail)
 // ──────────────────────────────────────────
 function initForm() {
   const form = document.getElementById('contactForm');
   const btn  = document.getElementById('cfSubmit');
   if (!form) return;
+
+  // EmailJS credentials (bektrade4444@gmail.com)
+  const EJS_PUBLIC_KEY  = 'EMAILJS_PUBLIC_KEY';   // ← to'ldiriladi
+  const EJS_SERVICE_ID  = 'EMAILJS_SERVICE_ID';   // ← to'ldiriladi
+  const EJS_TEMPLATE_ID = 'EMAILJS_TEMPLATE_ID';  // ← to'ldiriladi
+
+  // Init EmailJS
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init({ publicKey: EJS_PUBLIC_KEY });
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -348,39 +358,50 @@ function initForm() {
 
     const name    = form.cfName.value.trim();
     const email   = form.cfEmail.value.trim();
-    const budget  = form.cfBudget.value || 'Not specified';
+    const budget  = form.cfBudget?.value || 'Not specified';
     const message = form.cfMessage.value.trim();
 
-    // Loading
+    if (!name || !email || !message) return;
+
+    // Loading state
     btn.disabled = true;
-    text.textContent = 'Opening...';
+    text.textContent = 'Sending...';
     if (icon) icon.style.display = 'none';
     gsap.to(btn, { scale: 0.97, duration: 0.15 });
 
-    // Build Gmail compose URL — opens pre-filled compose window
-    const to      = 'bektrade4444@gmail.com';
-    const subject = encodeURIComponent(`[Portfolio] ${name} — ${budget}`);
-    const body    = encodeURIComponent(
-      `Hello Behruz!\n\n` +
-      `Name: ${name}\n` +
-      `Email: ${email}\n` +
-      `Budget: ${budget}\n\n` +
-      `Message:\n${message}\n\n` +
-      `---\nSent from portfolio: behruzmizrobov1.github.io`
-    );
+    try {
+      if (typeof emailjs === 'undefined') throw new Error('EmailJS not loaded');
 
-    // Try Gmail web first, fallback to mailto
-    const gmailURL  = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
-    const mailtoURL = `mailto:${to}?subject=${subject}&body=${body}`;
+      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
+        from_name:  name,
+        from_email: email,
+        budget:     budget,
+        message:    message,
+        reply_to:   email,
+      });
 
-    const newTab = window.open(gmailURL, '_blank');
-    if (!newTab) window.location.href = mailtoURL; // popup blocked fallback
+      // ✅ SUCCESS — xabar keldi!
+      text.textContent = '✓ Message Sent!';
+      btn.classList.add('success');
+      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
+      form.reset();
 
-    // Success state
-    gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
-    text.textContent = '✓ Gmail Opened!';
-    btn.classList.add('success');
-    form.reset();
+      // Confetti effect
+      gsap.fromTo('.contact-info', 
+        { x: 0 }, 
+        { x: 5, yoyo: true, repeat: 3, duration: 0.08 }
+      );
+
+    } catch (err) {
+      console.warn('EmailJS failed, using mailto fallback:', err);
+      // Fallback: mailto
+      const sub  = encodeURIComponent(`[Portfolio] ${name} — ${budget}`);
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nBudget: ${budget}\n\nMessage:\n${message}`);
+      window.open(`mailto:bektrade4444@gmail.com?subject=${sub}&body=${body}`, '_blank');
+      text.textContent = '✓ Email Opened!';
+      btn.classList.add('success');
+      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
+    }
 
     setTimeout(() => {
       text.textContent = 'Send Message';
