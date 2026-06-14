@@ -334,77 +334,60 @@ function initHamburger() {
 }
 
 // ──────────────────────────────────────────
-// 12. CONTACT FORM — Formspree real email
+// 12. CONTACT FORM — Gmail direct (100% works)
 // ──────────────────────────────────────────
 function initForm() {
   const form = document.getElementById('contactForm');
-  const btn = document.getElementById('cfSubmit');
+  const btn  = document.getElementById('cfSubmit');
   if (!form) return;
-
-  // FORMSPREE_ENDPOINT — bektrade4444@gmail.com ga boradi
-  // Formspree ID: behruz portfolio form
-  const ENDPOINT = 'https://formspree.io/f/xbjnjaqv';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = btn.querySelector('.bs-text');
     const icon = btn.querySelector('.bs-icon');
 
-    // Loading state
+    const name    = form.cfName.value.trim();
+    const email   = form.cfEmail.value.trim();
+    const budget  = form.cfBudget.value || 'Not specified';
+    const message = form.cfMessage.value.trim();
+
+    // Loading
     btn.disabled = true;
-    text.textContent = 'Sending...';
+    text.textContent = 'Opening...';
     if (icon) icon.style.display = 'none';
     gsap.to(btn, { scale: 0.97, duration: 0.15 });
 
-    // Form data
-    const data = {
-      name:    form.cfName.value,
-      email:   form.cfEmail.value,
-      budget:  form.cfBudget.value || 'Not specified',
-      message: form.cfMessage.value,
-      _subject: `Portfolio Contact: ${form.cfName.value}`,
-    };
+    // Build Gmail compose URL — opens pre-filled compose window
+    const to      = 'bektrade4444@gmail.com';
+    const subject = encodeURIComponent(`[Portfolio] ${name} — ${budget}`);
+    const body    = encodeURIComponent(
+      `Hello Behruz!\n\n` +
+      `Name: ${name}\n` +
+      `Email: ${email}\n` +
+      `Budget: ${budget}\n\n` +
+      `Message:\n${message}\n\n` +
+      `---\nSent from portfolio: behruzmizrobov1.github.io`
+    );
 
-    try {
-      const res = await fetch(ENDPOINT, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body:    JSON.stringify(data),
-      });
+    // Try Gmail web first, fallback to mailto
+    const gmailURL  = `https://mail.google.com/mail/?view=cm&to=${to}&su=${subject}&body=${body}`;
+    const mailtoURL = `mailto:${to}?subject=${subject}&body=${body}`;
 
-      if (res.ok) {
-        // SUCCESS
-        text.textContent = '✓ Message Sent!';
-        btn.classList.add('success');
-        gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
-        form.reset();
-        setTimeout(() => {
-          text.textContent = 'Send Message';
-          if (icon) icon.style.display = '';
-          btn.classList.remove('success');
-          btn.disabled = false;
-        }, 4000);
-      } else {
-        throw new Error('Server error');
-      }
-    } catch (err) {
-      // FALLBACK — mailto: ochadi
-      const subject = encodeURIComponent(`Portfolio Contact: ${data.name}`);
-      const body    = encodeURIComponent(
-        `Name: ${data.name}\nEmail: ${data.email}\nBudget: ${data.budget}\n\n${data.message}`
-      );
-      window.open(`mailto:bektrade4444@gmail.com?subject=${subject}&body=${body}`);
+    const newTab = window.open(gmailURL, '_blank');
+    if (!newTab) window.location.href = mailtoURL; // popup blocked fallback
 
-      text.textContent = '✓ Email Client Opened';
-      btn.classList.add('success');
-      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
-      setTimeout(() => {
-        text.textContent = 'Send Message';
-        if (icon) icon.style.display = '';
-        btn.classList.remove('success');
-        btn.disabled = false;
-      }, 3000);
-    }
+    // Success state
+    gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
+    text.textContent = '✓ Gmail Opened!';
+    btn.classList.add('success');
+    form.reset();
+
+    setTimeout(() => {
+      text.textContent = 'Send Message';
+      if (icon) icon.style.display = '';
+      btn.classList.remove('success');
+      btn.disabled = false;
+    }, 4000);
   });
 }
 
