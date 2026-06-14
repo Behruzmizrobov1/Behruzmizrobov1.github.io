@@ -373,7 +373,8 @@ function initForm() {
           email: email,
           budget: budget,
           message: message,
-          _subject: `Portfolio Contact: ${name}`
+          _subject: `Portfolio Contact: ${name}`,
+          _captcha: "false"
         })
       });
 
