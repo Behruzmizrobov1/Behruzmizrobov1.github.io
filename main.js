@@ -341,7 +341,7 @@ function initForm() {
   const btn  = document.getElementById('cfSubmit');
   if (!form) return;
 
-  const ENDPOINT = 'https://formsubmit.co/ajax/aefa1d9d4b2b02b1361d0d8d767127f2';
+  const ENDPOINT = 'https://formsubmit.co/ajax/bektrade4444@gmail.com';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
