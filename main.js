@@ -1,226 +1,426 @@
-/* ================================================
-   Portfolio JS — Animations, Interactions
-   ================================================ */
+/* ================================================================
+   PORTFOLIO V2 — main.js
+   GSAP + Lenis + VanillaTilt + Custom Cursor + Magnetic
+   ================================================================ */
 
-// ── PARTICLES
-function createParticles() {
-  const container = document.getElementById('particles');
-  const count = 25;
-  for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.classList.add('particle');
-    const size = Math.random() * 4 + 1;
-    const colors = ['#00d4ff', '#7c3aed', '#00ff88'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    p.style.cssText = `
-      width: ${size}px; height: ${size}px;
-      left: ${Math.random() * 100}%;
-      background: ${color};
-      animation-duration: ${Math.random() * 15 + 10}s;
-      animation-delay: ${Math.random() * 10}s;
-    `;
-    container.appendChild(p);
-  }
-}
+// ──────────────────────────────────────────
+// 1. REGISTER GSAP PLUGINS
+// ──────────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
 
-// ── NAVBAR SCROLL
-const navbar = document.getElementById('navbar');
-const navLinks = document.querySelectorAll('.nav-link');
-const sections = document.querySelectorAll('section[id]');
+// ──────────────────────────────────────────
+// 2. LOADER
+// ──────────────────────────────────────────
+const loader = document.getElementById('loader');
+const loaderBar = document.getElementById('loaderBar');
+const loaderPct = document.getElementById('loaderPercent');
 
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 50) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
+let progress = 0;
+const loadInterval = setInterval(() => {
+  progress += Math.random() * 18 + 4;
+  if (progress >= 100) { progress = 100; clearInterval(loadInterval); initSite(); }
+  loaderBar.style.width = progress + '%';
+  loaderPct.textContent = Math.floor(progress) + '%';
+}, 80);
 
-  // Active nav link
-  let current = '';
-  sections.forEach(sec => {
-    const sectionTop = sec.offsetTop - 100;
-    if (window.scrollY >= sectionTop) current = sec.getAttribute('id');
-  });
-  navLinks.forEach(link => {
-    link.classList.remove('active');
-    if (link.getAttribute('href') === `#${current}`) {
-      link.classList.add('active');
-    }
-  });
-}, { passive: true });
-
-// Smooth scroll for nav links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-      // Close mobile menu
-      document.getElementById('navLinks').classList.remove('open');
-    }
-  });
-});
-
-// ── HAMBURGER MENU
-const hamburger = document.getElementById('hamburger');
-const navLinksEl = document.getElementById('navLinks');
-hamburger.addEventListener('click', () => {
-  navLinksEl.classList.toggle('open');
-});
-
-// ── COUNTER ANIMATION
-function animateCounters() {
-  const counters = document.querySelectorAll('.stat-num');
-  counters.forEach(counter => {
-    const target = parseInt(counter.dataset.target);
-    const duration = 2000;
-    const step = target / (duration / 16);
-    let current = 0;
-    const timer = setInterval(() => {
-      current += step;
-      if (current >= target) {
-        current = target;
-        clearInterval(timer);
-      }
-      counter.textContent = Math.floor(current);
-    }, 16);
-  });
-}
-
-// ── SKILL BARS ANIMATION
-function animateSkillBars() {
-  const bars = document.querySelectorAll('.skill-fill');
-  bars.forEach(bar => {
-    const width = bar.dataset.width;
-    setTimeout(() => {
-      bar.style.width = width + '%';
-    }, 200);
-  });
-}
-
-// ── INTERSECTION OBSERVER
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      
-      // Trigger special animations
-      if (entry.target.id === 'home') {
-        setTimeout(animateCounters, 500);
-      }
-      if (entry.target.id === 'skills') {
-        setTimeout(animateSkillBars, 300);
-      }
-    }
-  });
-}, { threshold: 0.1 });
-
-sections.forEach(section => observer.observe(section));
-
-// Fade-in elements
-const fadeEls = document.querySelectorAll('.fade-in, .slide-left, .slide-right');
-const elObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => entry.target.classList.add('visible'), i * 100);
-    }
-  });
-}, { threshold: 0.1 });
-fadeEls.forEach(el => elObserver.observe(el));
-
-// ── TYPING EFFECT
-function typeEffect(el, text, speed = 60) {
-  el.textContent = '';
-  let i = 0;
-  const timer = setInterval(() => {
-    el.textContent += text[i];
-    i++;
-    if (i >= text.length) clearInterval(timer);
-  }, speed);
-}
-
-// ── CONTACT FORM
-const form = document.getElementById('contactForm');
-const submitBtn = document.getElementById('submitBtn');
-
-form.addEventListener('submit', function(e) {
-  e.preventDefault();
-  
-  const btnText = submitBtn.querySelector('.btn-text');
-  submitBtn.disabled = true;
-  btnText.textContent = 'Sending...';
-  
-  // Simulate send (replace with real backend/email service)
+function initSite() {
   setTimeout(() => {
-    btnText.textContent = '✓ Message Sent!';
-    submitBtn.style.background = 'linear-gradient(135deg, #00ff88, #00d4aa)';
-    form.reset();
-    
-    setTimeout(() => {
-      btnText.textContent = 'Send Message';
-      submitBtn.disabled = false;
-      submitBtn.style.background = '';
-    }, 3000);
-  }, 1500);
-});
+    loader.classList.add('hidden');
+    document.body.style.overflow = '';
+    animateHero();
+  }, 400);
+}
+document.body.style.overflow = 'hidden';
 
-// ── CARD HOVER 3D TILT
-document.querySelectorAll('.project-card, .service-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    card.style.transform = `perspective(600px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-4px)`;
+// ──────────────────────────────────────────
+// 3. LENIS SMOOTH SCROLL
+// ──────────────────────────────────────────
+let lenis;
+try {
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
   });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-  });
-});
 
-// ── TERMINAL TYPING
-const aboutSection = document.getElementById('about');
-const aboutObserver = new IntersectionObserver((entries) => {
-  if (entries[0].isIntersecting) {
-    const outputEl = document.getElementById('terminalOutput');
-    if (outputEl) {
-      outputEl.style.opacity = '0';
-      setTimeout(() => {
-        outputEl.style.transition = 'opacity 0.5s';
-        outputEl.style.opacity = '1';
-      }, 800);
+  lenis.on('scroll', ScrollTrigger.update);
+
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+} catch(e) {
+  console.warn('Lenis init failed, using native scroll', e);
+}
+
+// ──────────────────────────────────────────
+// 4. CUSTOM CURSOR
+// ──────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursorFollower');
+
+if (window.innerWidth > 640 && cursor) {
+  let mouseX = 0, mouseY = 0;
+  let followerX = 0, followerY = 0;
+
+  // GSAP quickTo for smooth tracking
+  const xTo = gsap.quickTo(cursor, 'x', { duration: 0.15, ease: 'power3' });
+  const yTo = gsap.quickTo(cursor, 'y', { duration: 0.15, ease: 'power3' });
+  const xFol = gsap.quickTo(follower, 'x', { duration: 0.5, ease: 'power3' });
+  const yFol = gsap.quickTo(follower, 'y', { duration: 0.5, ease: 'power3' });
+
+  window.addEventListener('mousemove', (e) => {
+    xTo(e.clientX);
+    yTo(e.clientY);
+    xFol(e.clientX);
+    yFol(e.clientY);
+  }, { passive: true });
+
+  // Cursor states
+  document.querySelectorAll('[data-cursor="link"]').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+}
+
+// ──────────────────────────────────────────
+// 5. MAGNETIC BUTTONS
+// ──────────────────────────────────────────
+function initMagnetic() {
+  document.querySelectorAll('.magnetic').forEach(el => {
+    el.addEventListener('mousemove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) * 0.35;
+      const dy = (e.clientY - cy) * 0.35;
+      gsap.to(el, { x: dx, y: dy, duration: 0.3, ease: 'power2.out' });
+    });
+    el.addEventListener('mouseleave', () => {
+      gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+    });
+  });
+}
+
+// ──────────────────────────────────────────
+// 6. VANILLA TILT
+// ──────────────────────────────────────────
+function initTilt() {
+  if (typeof VanillaTilt === 'undefined') return;
+  VanillaTilt.init(document.querySelectorAll('[data-tilt]'), {
+    max: 8, speed: 400, glare: true, 'max-glare': 0.1,
+  });
+}
+
+// ──────────────────────────────────────────
+// 7. HERO ANIMATION SEQUENCE
+// ──────────────────────────────────────────
+function animateHero() {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  // Fade in background
+  tl.from('.hero-aurora', { opacity: 0, duration: 1.5, ease: 'power2.out' })
+
+  // Tag
+  .from('#heroTag', { opacity: 0, y: 20, duration: 0.6 }, '-=0.8')
+
+  // Title lines stagger
+  .from('.ht-line', {
+    opacity: 0, y: 60, duration: 0.9,
+    stagger: 0.12, ease: 'power4.out'
+  }, '-=0.4')
+
+  // Description
+  .to('#heroDesc', { opacity: 1, y: 0, duration: 0.7 }, '-=0.4')
+  .from('#heroDesc', { y: 24 }, '<')
+
+  // Typed
+  .to('#heroTyped', { opacity: 1, duration: 0.3 }, '-=0.2')
+
+  // Actions
+  .to('#heroActions', { opacity: 1, duration: 0.5 }, '-=0.1')
+  .from('#heroActions a', { y: 20, stagger: 0.1, duration: 0.5, ease: 'back.out(1.5)' }, '<')
+
+  // Socials
+  .to('#heroSocials', { opacity: 1, duration: 0.5 }, '-=0.3')
+  .from('#heroSocials a', { y: 20, stagger: 0.07, duration: 0.5 }, '<')
+
+  // Right side
+  .from('#heroRight', {
+    opacity: 0, x: 40, duration: 1, ease: 'power3.out'
+  }, 0.3);
+
+  // Typed.js after animation
+  tl.call(() => {
+    try {
+      new Typed('#heroTyped', {
+        strings: [
+          'building REST APIs...',
+          'optimizing PostgreSQL...',
+          'writing Go microservices...',
+          'deploying to production...',
+          'available for freelance ✓'
+        ],
+        typeSpeed: 50,
+        backSpeed: 30,
+        backDelay: 2000,
+        loop: true,
+        showCursor: false,
+      });
+    } catch(e) {}
+  });
+
+  // Counter animation
+  tl.call(() => animateCounters());
+}
+
+// ──────────────────────────────────────────
+// 8. COUNTER ANIMATION
+// ──────────────────────────────────────────
+function animateCounters() {
+  document.querySelectorAll('.stat-n').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    gsap.to({ val: 0 }, {
+      val: target,
+      duration: 2,
+      ease: 'power2.out',
+      onUpdate: function() { el.textContent = Math.floor(this.targets()[0].val); }
+    });
+  });
+}
+
+// ──────────────────────────────────────────
+// 9. SCROLL ANIMATIONS (GSAP ScrollTrigger)
+// ──────────────────────────────────────────
+function initScrollAnimations() {
+  // Reveal up elements
+  gsap.utils.toArray('.reveal-up').forEach((el, i) => {
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: 0.85,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none none'
+      },
+      delay: (i % 3) * 0.1
+    });
+    gsap.set(el, { y: 40 });
+  });
+
+  // Reveal right elements
+  gsap.utils.toArray('.reveal-right').forEach(el => {
+    gsap.to(el, {
+      opacity: 1,
+      x: 0,
+      duration: 0.9,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 80%',
+      }
+    });
+    gsap.set(el, { x: 50 });
+  });
+
+  // Section titles split reveal
+  document.querySelectorAll('.section-title').forEach(el => {
+    gsap.from(el, {
+      opacity: 0, y: 40, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    });
+  });
+
+  // Skill bars
+  gsap.utils.toArray('.sm-fill').forEach(bar => {
+    ScrollTrigger.create({
+      trigger: bar,
+      start: 'top 90%',
+      onEnter: () => {
+        bar.style.width = bar.dataset.w + '%';
+      }
+    });
+  });
+
+  // Services cards stagger
+  gsap.from('.svc-card', {
+    opacity: 0, y: 50, stagger: 0.1, duration: 0.7, ease: 'power3.out',
+    scrollTrigger: { trigger: '.services-grid', start: 'top 80%' }
+  });
+
+  // Stack cards stagger
+  gsap.from('.stack-card', {
+    opacity: 0, y: 30, scale: 0.95,
+    stagger: 0.06, duration: 0.6, ease: 'back.out(1.5)',
+    scrollTrigger: { trigger: '.stack-grid', start: 'top 80%' }
+  });
+
+  // Marquee parallax feel - speed boost on scroll
+  ScrollTrigger.create({
+    trigger: '.marquee-section',
+    start: 'top bottom',
+    end: 'bottom top',
+    onEnter: () => {
+      document.querySelector('.marquee-track').style.animationDuration = '20s';
+    },
+    onLeave: () => {
+      document.querySelector('.marquee-track').style.animationDuration = '30s';
     }
-    aboutObserver.disconnect();
-  }
-}, { threshold: 0.3 });
-if (aboutSection) aboutObserver.observe(aboutSection);
+  });
+}
 
-// ── CURSOR GLOW (subtle)
-const cursorGlow = document.createElement('div');
-cursorGlow.style.cssText = `
-  position: fixed; width: 300px; height: 300px;
-  border-radius: 50%; pointer-events: none; z-index: 0;
-  background: radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%);
-  transform: translate(-50%, -50%); transition: 0.1s;
-`;
-document.body.appendChild(cursorGlow);
-document.addEventListener('mousemove', (e) => {
-  cursorGlow.style.left = e.clientX + 'px';
-  cursorGlow.style.top = e.clientY + 'px';
-}, { passive: true });
+// ──────────────────────────────────────────
+// 10. NAVBAR
+// ──────────────────────────────────────────
+function initNav() {
+  const nav = document.getElementById('nav');
+  const links = document.querySelectorAll('.nav-link');
 
-// ── INIT
-document.addEventListener('DOMContentLoaded', () => {
-  createParticles();
-  animateCounters();
-  
-  // Animate visible skill bars on load if skills section is visible
-  const skillsSection = document.getElementById('skills');
-  if (skillsSection) {
-    const rect = skillsSection.getBoundingClientRect();
-    if (rect.top < window.innerHeight) animateSkillBars();
-  }
+  ScrollTrigger.create({
+    start: 'top -60',
+    onUpdate: (self) => {
+      nav.classList.toggle('scrolled', self.scroll() > 60);
+    }
+  });
+
+  // Active link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let cur = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 140) cur = sec.id;
+    });
+    links.forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('href') === '#' + cur) l.classList.add('active');
+    });
+  }, { passive: true });
+
+  // Smooth scroll for all anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (!target) return;
+      e.preventDefault();
+      if (lenis) {
+        lenis.scrollTo(target, { offset: -80, duration: 1.5 });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+      // Close mobile menu
+      document.getElementById('mobileMenu').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+    });
+  });
+}
+
+// ──────────────────────────────────────────
+// 11. HAMBURGER
+// ──────────────────────────────────────────
+function initHamburger() {
+  const btn = document.getElementById('hamburger');
+  const menu = document.getElementById('mobileMenu');
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('open');
+    menu.classList.toggle('open');
+    if (lenis) {
+      menu.classList.contains('open') ? lenis.stop() : lenis.start();
+    }
+  });
+}
+
+// ──────────────────────────────────────────
+// 12. CONTACT FORM
+// ──────────────────────────────────────────
+function initForm() {
+  const form = document.getElementById('contactForm');
+  const btn = document.getElementById('cfSubmit');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = btn.querySelector('.bs-text');
+    btn.disabled = true;
+    text.textContent = 'Sending...';
+    gsap.to(btn, { scale: 0.97, duration: 0.15 });
+
+    setTimeout(() => {
+      text.textContent = '✓ Message Sent!';
+      btn.classList.add('success');
+      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
+      form.reset();
+      setTimeout(() => {
+        text.textContent = 'Send Message';
+        btn.classList.remove('success');
+        btn.disabled = false;
+      }, 3000);
+    }, 1500);
+  });
+}
+
+// ──────────────────────────────────────────
+// 13. PARALLAX ON AURORA
+// ──────────────────────────────────────────
+function initParallax() {
+  gsap.to('.aurora-img', {
+    y: '20%',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.hero',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 1.5
+    }
+  });
+}
+
+// ──────────────────────────────────────────
+// 14. SCRAMBLE TEXT on hover (manual)
+// ──────────────────────────────────────────
+function scramble(el, text) {
+  const chars = '!@#$%^&*ABCDEFGHIJKabcdefghij0123456789';
+  let frame = 0;
+  const totalFrames = 20;
+  const interval = setInterval(() => {
+    el.textContent = text.split('').map((c, i) => {
+      if (i < frame / totalFrames * text.length) return text[i];
+      return chars[Math.floor(Math.random() * chars.length)];
+    }).join('');
+    frame++;
+    if (frame > totalFrames) {
+      clearInterval(interval);
+      el.textContent = text;
+    }
+  }, 35);
+}
+
+document.querySelectorAll('.nav-link').forEach(el => {
+  const orig = el.textContent;
+  el.addEventListener('mouseenter', () => scramble(el, orig));
 });
 
-console.log('%c Behruz Portfolio 🚀', 'font-size:20px; font-weight:bold; color:#00d4ff;');
-console.log('%c Backend Developer · Go & Python', 'font-size:12px; color:#8899aa;');
+// ──────────────────────────────────────────
+// 15. INIT ALL
+// ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initNav();
+  initHamburger();
+  initMagnetic();
+  initTilt();
+  initScrollAnimations();
+  initParallax();
+  initForm();
+});
+
+// ──────────────────────────────────────────
+// 16. DEV CONSOLE BRANDING
+// ──────────────────────────────────────────
+console.log(
+  '%c Behruz Mizrobov %c Backend Developer %c ',
+  'background:#22d3ee;color:#000;font-weight:700;padding:4px 8px;border-radius:4px 0 0 4px',
+  'background:#818cf8;color:#fff;font-weight:600;padding:4px 8px',
+  'background:transparent',
+);
+console.log('%c github.com/Behruzmizrobov1', 'color:#94a3b8;font-size:11px');
