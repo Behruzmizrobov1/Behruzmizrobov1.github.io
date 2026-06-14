@@ -334,22 +334,14 @@ function initHamburger() {
 }
 
 // ──────────────────────────────────────────
-// 12. CONTACT FORM — EmailJS (visitor sends → arrives in Gmail)
+// 12. CONTACT FORM — FormSubmit.co (Zero Setup)
 // ──────────────────────────────────────────
 function initForm() {
   const form = document.getElementById('contactForm');
   const btn  = document.getElementById('cfSubmit');
   if (!form) return;
 
-  // EmailJS credentials (bektrade4444@gmail.com)
-  const EJS_PUBLIC_KEY  = 'EMAILJS_PUBLIC_KEY';   // ← to'ldiriladi
-  const EJS_SERVICE_ID  = 'EMAILJS_SERVICE_ID';   // ← to'ldiriladi
-  const EJS_TEMPLATE_ID = 'EMAILJS_TEMPLATE_ID';  // ← to'ldiriladi
-
-  // Init EmailJS
-  if (typeof emailjs !== 'undefined') {
-    emailjs.init({ publicKey: EJS_PUBLIC_KEY });
-  }
+  const ENDPOINT = 'https://formsubmit.co/ajax/bektrade4444@gmail.com';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -370,17 +362,24 @@ function initForm() {
     gsap.to(btn, { scale: 0.97, duration: 0.15 });
 
     try {
-      if (typeof emailjs === 'undefined') throw new Error('EmailJS not loaded');
-
-      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
-        from_name:  name,
-        from_email: email,
-        budget:     budget,
-        message:    message,
-        reply_to:   email,
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          budget: budget,
+          message: message,
+          _subject: `Portfolio Contact: ${name}`
+        })
       });
 
-      // ✅ SUCCESS — xabar keldi!
+      if (!res.ok) throw new Error('Network error');
+
+      // ✅ SUCCESS
       text.textContent = '✓ Message Sent!';
       btn.classList.add('success');
       gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
@@ -393,7 +392,7 @@ function initForm() {
       );
 
     } catch (err) {
-      console.warn('EmailJS failed, using mailto fallback:', err);
+      console.warn('FormSubmit failed, fallback to mailto:', err);
       // Fallback: mailto
       const sub  = encodeURIComponent(`[Portfolio] ${name} — ${budget}`);
       const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nBudget: ${budget}\n\nMessage:\n${message}`);
