@@ -334,81 +334,26 @@ function initHamburger() {
 }
 
 // ──────────────────────────────────────────
-// 12. CONTACT FORM — FormSubmit.co (Zero Setup)
+// 12. CONTACT FORM — Native FormSubmit
 // ──────────────────────────────────────────
 function initForm() {
   const form = document.getElementById('contactForm');
   const btn  = document.getElementById('cfSubmit');
   if (!form) return;
 
-  const ENDPOINT = 'https://formsubmit.co/ajax/bektrade4444@gmail.com';
+  // We set the action dynamically so bots scraping the HTML don't immediately see the email
+  form.action = 'https://formsubmit.co/bektrade4444@gmail.com';
+  form.method = 'POST';
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  form.addEventListener('submit', () => {
     const text = btn.querySelector('.bs-text');
     const icon = btn.querySelector('.bs-icon');
 
-    const name    = form.cfName.value.trim();
-    const email   = form.cfEmail.value.trim();
-    const budget  = form.cfBudget?.value || 'Not specified';
-    const message = form.cfMessage.value.trim();
-
-    if (!name || !email || !message) return;
-
-    // Loading state
+    // Just show loading state, the browser will navigate away to FormSubmit
     btn.disabled = true;
     text.textContent = 'Sending...';
     if (icon) icon.style.display = 'none';
     gsap.to(btn, { scale: 0.97, duration: 0.15 });
-
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-          budget: budget,
-          message: message,
-          _subject: `Portfolio Contact: ${name}`,
-          _captcha: "false"
-        })
-      });
-
-      if (!res.ok) throw new Error('Network error');
-
-      // ✅ SUCCESS
-      text.textContent = '✓ Message Sent!';
-      btn.classList.add('success');
-      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
-      form.reset();
-
-      // Confetti effect
-      gsap.fromTo('.contact-info', 
-        { x: 0 }, 
-        { x: 5, yoyo: true, repeat: 3, duration: 0.08 }
-      );
-
-    } catch (err) {
-      console.warn('FormSubmit failed, fallback to mailto:', err);
-      // Fallback: mailto
-      const sub  = encodeURIComponent(`[Portfolio] ${name} — ${budget}`);
-      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nBudget: ${budget}\n\nMessage:\n${message}`);
-      window.open(`mailto:bektrade4444@gmail.com?subject=${sub}&body=${body}`, '_blank');
-      text.textContent = '✓ Email Opened!';
-      btn.classList.add('success');
-      gsap.to(btn, { scale: 1, duration: 0.4, ease: 'back.out(1.5)' });
-    }
-
-    setTimeout(() => {
-      text.textContent = 'Send Message';
-      if (icon) icon.style.display = '';
-      btn.classList.remove('success');
-      btn.disabled = false;
-    }, 4000);
   });
 }
 
