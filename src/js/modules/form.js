@@ -31,12 +31,14 @@ export function initForm() {
         }
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success === "true") {
         text.textContent = 'Sent Successfully!';
         btn.style.backgroundColor = '#10b981'; // green color
         form.reset();
       } else {
-        text.textContent = 'Error. Try Again';
+        text.textContent = 'Activation Required';
         btn.disabled = false;
         if (icon) icon.style.display = 'inline-block';
       }
