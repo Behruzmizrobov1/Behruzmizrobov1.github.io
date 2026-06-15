@@ -10,9 +10,11 @@ export function initForm() {
     const text = btn.querySelector('.bs-text');
     const icon = btn.querySelector('.bs-icon');
 
-    btn.disabled = true;
-    text.textContent = 'Sending...';
-    if (icon) icon.style.display = 'none';
+    setTimeout(() => {
+      btn.disabled = true;
+      text.textContent = 'Sending...';
+      if (icon) icon.style.display = 'none';
+    }, 50);
     
     if (window.gsap) {
       window.gsap.to(btn, { scale: 0.97, duration: 0.15 });
